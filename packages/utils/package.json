@@ -1,0 +1,17 @@
+{
+  "name": "@abstraction/utils",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@peculiar/asn1-ecc": "^2.6.0",
+    "@peculiar/asn1-schema": "^2.6.0",
+    "base64url": "^3.0.1"
+  }
+}
