@@ -13,17 +13,17 @@ function uint8ArrayToBigInt(arr: Uint8Array): BigInt {
   return BigInt("0x" + hex);
 }
 
-export function getXYCoordinates(publicKeyBase64: string): BigInt[] {
+export function getXYCoordinates(publicKeyBase64: string): { x: BigInt; y: BigInt } {
   const publicKeyBuffer = Buffer.from(publicKeyBase64, "base64");
   let b = Array.from(publicKeyBuffer);
   b = b.slice(-65);
   const x = b.slice(1, 33);
   const y = b.slice(33, 65);
 
-  return [
-    BigInt("0x" + Buffer.from(x).toString("hex")),
-    BigInt("0x" + Buffer.from(y).toString("hex")),
-  ];
+  return {
+    x: BigInt("0x" + Buffer.from(x).toString("hex")),
+    y: BigInt("0x" + Buffer.from(y).toString("hex")),
+  };
 }
 
 export class WebAuthnUtils {

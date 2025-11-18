@@ -1,18 +1,16 @@
 "use client"
-import { client } from "@passwordless-id/webauthn";
+import { client, parsers } from "@passwordless-id/webauthn";
 import { NextPage } from "next";
+import { useState } from "react";
 
 const LoginPage: NextPage = () => {
-  const [passkeyName, setPasskeyName] = React.useState("My Passkey");
+  const [passkeyName, setPasskeyName] = useState("My Passkey");
 
   const handleLogin = async () => {
     const randomString = Math.random().toString(36).substring(2, 15);
-    const regData  = await client.register(
-      passkeyName,
-      randomString,
+    const regData  = await client.authenticate(
       {
-        authenticatorType: "auto",
-        userVerification: "required",
+        challenge: randomString,
       }
     );
     const parsedData = parsers.parseRegistration(regData);
