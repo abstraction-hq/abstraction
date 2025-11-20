@@ -42,7 +42,7 @@ const initConfig = async (credential: ICredential): Promise<Config> => {
   }
 }
 
-const useSmartAccount = () => {
+export const useSmartAccount = () => {
   const { credential, loading, setCredential } = useCredentialStore()
   const [configLoading , setConfigLoading] = useState<boolean>(true)
   const [config, setConfig] = useState<Config | null>(null)
@@ -142,6 +142,4 @@ const useSmartAccount = () => {
     loginSmartAccount
   }
 }
-
-export default useSmartAccount
 

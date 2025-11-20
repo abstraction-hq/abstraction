@@ -1,6 +1,6 @@
 "use client"
 import { NextPage } from "next";
-import useSmartAccount from "../hooks/useSmartAccount";
+import { useSmartAccount } from "../hooks/useSmartAccount";
 
 const MainPage: NextPage = () => {
   const { loading, loginSmartAccount, config, sendTransaction } = useSmartAccount()
