@@ -1,10 +1,11 @@
-import { bytesToHex, concat, decodeFunctionData, encodeAbiParameters, encodeFunctionData, encodePacked, getContractAddress, hexToBytes, keccak256, zeroAddress, type Address, type Assign, type Hex, type Prettify, type PublicClient } from "viem";
+import { bytesToHex, concat, encodeAbiParameters, encodeFunctionData, encodePacked, getContractAddress, hexToBytes, keccak256, zeroAddress, type Address, type Assign, type Hex, type Prettify, type PublicClient } from "viem";
 import FactoryAbi from "./Factory.abi.json";
 import WalletAbi from "./Wallet.abi.json";
 import type * as WebAuthnP256 from 'ox/WebAuthnP256'
-import { entryPoint07Abi, entryPoint07Address, getUserOperationHash, toSmartAccount, type entryPoint06Abi, type SmartAccount, type SmartAccountImplementation, type UserOperation, type WebAuthnAccount } from "viem/account-abstraction";
+import { entryPoint07Abi, entryPoint07Address, getUserOperationHash, toSmartAccount, type SmartAccount, type SmartAccountImplementation, type WebAuthnAccount } from "viem/account-abstraction";
 import { readContract } from "viem/actions";
 import { Signature } from "ox";
+import { numberToBytesBE } from "@noble/curves/utils.js";
 
 export const factoryAddress: Address = "0xcCb14De8AbA42358E5B489D99734B8Fb9AF197c0"
 export const accountInitCodeHash: Hex = "0x214f2447c0997c4d2ed97a0d3ee3f186463f7636a63bc48358930c664888998a"
@@ -18,7 +19,6 @@ export const computeAccountAddress = (x: bigint, y: bigint): Address => {
     bytecodeHash: accountInitCodeHash
   })
 }
-
 
 export const computeInitCode = async (publicClient: PublicClient, accountAddress: Address, x: bigint, y: bigint): Promise<Hex> => {
   const accountCode = await publicClient.getCode({ address: accountAddress })
@@ -212,8 +212,6 @@ export const toWebAuthnSignature = (signature: Hex, webauthn: WebAuthnP256.SignM
   return res
 }
 
-
-
 export const parsePublicKey = (publicKey: Hex | Uint8Array): PublicKey => {
   const bytes =
     typeof publicKey === 'string' ? hexToBytes(publicKey) : publicKey
@@ -225,6 +223,27 @@ export const parsePublicKey = (publicKey: Hex | Uint8Array): PublicKey => {
     x: BigInt(bytesToHex(x)),
     y: BigInt(bytesToHex(y)),
   }
+}
+
+export type SerializePublicKeyOptions<to extends 'hex' | 'bytes' = 'hex'> = {
+  compressed?: boolean | undefined
+  to?: to | 'bytes' | 'hex' | undefined
+}
+
+/**
+ * Serializes a public key into a hex string or bytes.
+ */
+export function serializePublicKey<to extends 'hex' | 'bytes' = 'hex'>(
+  publicKey: PublicKey,
+  options: SerializePublicKeyOptions<to> = {},
+): to extends 'hex' ? Hex : Uint8Array {
+  const { compressed = false, to = 'hex' } = options
+  const result = Uint8Array.from([
+    ...(publicKey.prefix && !compressed ? [publicKey.prefix] : []),
+    ...numberToBytesBE(publicKey.x, 32),
+    ...numberToBytesBE(publicKey.y, 32),
+  ])
+  return (to === 'hex' ? bytesToHex(result) : result) as any
 }
 
 export {

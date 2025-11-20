@@ -1,8 +1,11 @@
+import { Hex } from "viem";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { CreateWebAuthnCredentialReturnType } from "viem/account-abstraction";
 
-export type ICredential = CreateWebAuthnCredentialReturnType
+export type ICredential = {
+  id: string;
+  publicKey: Hex;
+}
 
 interface ICredentialStore {
   credential: ICredential | null;
