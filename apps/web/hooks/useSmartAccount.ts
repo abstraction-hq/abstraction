@@ -6,6 +6,7 @@ import { baseSepolia } from "viem/chains"
 import { FactoryAbi, factoryAddress, PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@abstraction/onchain"
 import { WebAuthnP256 } from "ox"
 import { readContract } from "viem/actions"
+import { create } from "zustand"
 
 type Config = {
   account: SmartAccount,
@@ -42,28 +43,46 @@ const initConfig = async (credential: ICredential): Promise<Config> => {
   }
 }
 
+type ConfigStore = {
+  config: Config | null;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  setConfig: (config: Config) => void;
+}
+
+const useConfigStore = create<ConfigStore>()(
+  (set) => ({
+    config: null,
+    loading: true,
+    setConfig: (config: Config) => set({ config }),
+    setLoading: (loading: boolean) => set({ loading }),
+  })
+)
+
 export const useSmartAccount = () => {
-  const { credential, loading, setCredential } = useCredentialStore()
-  const [configLoading , setConfigLoading] = useState<boolean>(true)
-  const [config, setConfig] = useState<Config | null>(null)
+  const credential = useCredentialStore(s => s.credential)
+  const setCredential = useCredentialStore(s => s.setCredential)
+  const loading = useCredentialStore(s => s.loading)
+  const config = useConfigStore(s => s.config)
+  const configLoading = useConfigStore(s => s.loading)
+  const setConfigLoading = useConfigStore(s => s.setLoading)
+  const setConfig = useConfigStore(s => s.setConfig)
 
   useEffect(() => {
-    if (!loading && credential) {
-      setConfigLoading(true)
+    if (!loading && credential && !config) {
       initConfig(credential).then((cfg) => {
         setConfig(cfg)
-        setConfigLoading(false)
-      })
+      }).finally(() => setConfigLoading(false))
+    } else if (!loading && !credential) {
+      setConfigLoading(false)
     }
-  }, [loading, credential])
+  }, [credential, loading])
 
   const createSmartAccount = useCallback(async (name: string) => {
     const credential: ICredential = await createWebAuthnCredential({
       name
     })
     setCredential(credential)
-    const cfg = await initConfig(credential)
-    setConfig(cfg)
   }, [setCredential])
 
   const loginSmartAccount = useCallback(async () => {
@@ -104,8 +123,6 @@ export const useSmartAccount = () => {
       publicKey: serializePublicKey(publicKey),
     }
     setCredential(credential)
-    const cfg = await initConfig(credential)
-    setConfig(cfg)
   }, [setCredential])
 
   const estimateTransaction = useCallback(async (calls: Call[]) => {

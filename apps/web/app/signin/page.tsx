@@ -2,61 +2,53 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { WalletIcon, KeyIcon, AlertCircleIcon } from "lucide-react"
+import { useSmartAccount } from "@/hooks/useSmartAccount"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function SignInPage() {
   const router = useRouter()
-  const [username, setUsername] = useState("")
+  const { loading, config, loginSmartAccount } = useSmartAccount()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (!loading && config) {
+      router.push("/dashboard")
+    }
+  }, [loading, config, router])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!username.trim()) {
-      setError("Please enter your username")
-      return
-    }
-
     setIsLoading(true)
 
     try {
       // Simulate passkey authentication
-      // In a real app, this would use the WebAuthn API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await loginSmartAccount()
 
-      // Check if user exists (in a real app, this would be handled by your backend)
-      const existingUser = localStorage.getItem("wallet_user")
-
-      if (!existingUser) {
-        setError("Wallet not found. Please create a new wallet.")
-        setIsLoading(false)
-        return
-      }
-
-      const userData = JSON.parse(existingUser)
-
-      if (userData.username !== username) {
-        setError("Username not found. Please check and try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // Redirect to dashboard
       router.push("/dashboard")
     } catch (err) {
-      setError("Failed to sign in. Please try again.")
+      if (typeof err === "string") {
+        setError(err)
+      } else {
+        setError("Failed to sign in. Please try again.")
+      }
       setIsLoading(false)
     }
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <Spinner className="size-8 text-primary" />
+    </div>
   }
 
   return (
@@ -78,26 +70,6 @@ export default function SignInPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isLoading}
-                  autoComplete="username"
-                />
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircleIcon className="size-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                 {isLoading ? (
                   <>
@@ -111,7 +83,12 @@ export default function SignInPage() {
                   </>
                 )}
               </Button>
-
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircleIcon className="size-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <div className="space-y-4 pt-4">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">

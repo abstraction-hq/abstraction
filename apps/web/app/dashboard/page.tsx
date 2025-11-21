@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowUpRight, ArrowDownLeft, ArrowRightLeft, TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { useSmartAccount } from "@/hooks/useSmartAccount"
+import { useTokenBalances } from "@/hooks/use-token-balance"
+import { formatUnits, parseUnits, zeroAddress } from "viem"
 
 // Mock data
 const mockTokens = [
@@ -103,9 +106,31 @@ const mockTransactions = [
   },
 ]
 
+const formatDecimal = (v: string, max = 6) => {
+  if (!v) return "";
+  const cleaned = v.replace(/[^0-9.]/g, "");
+  const [head, ...rest] = cleaned.split(".");
+  const dec = rest.join("");
+  return dec ? `${head}.${dec.slice(0, max)}` : head;
+};
+
+const formatUSD = (usd?: string) => {
+  if (!usd) return "";
+  const n = Number(usd);
+  if (Number.isNaN(n)) return "";
+  return n >= 1000
+    ? `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+    : `$${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+};
+
 export default function DashboardPage() {
-  const totalBalance = "$6,814.00"
+  const { balances } = useTokenBalances("0x2239ECcB0d91c0C648b36b967Bb1ef38C5b2B13D")
+  
   const balanceChange = "+12.5%"
+
+  console.log("Token Balances:", balances)
+
+  const totalUsdBalance = balances.reduce((acc, token) => acc + (token.balanceInUsd || 0), 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -114,7 +139,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardDescription>Total Balance</CardDescription>
           <div className="flex items-end justify-between">
-            <CardTitle className="text-4xl font-bold">{totalBalance}</CardTitle>
+            <CardTitle className="text-4xl font-bold">{formatUSD(totalUsdBalance.toString())}</CardTitle>
             <div className="flex items-center gap-2">
               <Button size="sm" asChild>
                 <Link href="/dashboard/send">
@@ -159,14 +184,14 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockTokens.map((token) => (
+                {balances.map((token) => (
                   <div
-                    key={token.id}
+                    key={token.address}
                     className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                   >
                     <div className="flex items-center gap-4">
                       <Avatar className="size-10">
-                        <AvatarImage src={token.icon || "/placeholder.svg"} alt={token.name} />
+                        <AvatarImage src={token.logoURI || "/placeholder.svg"} alt={token.name} />
                         <AvatarFallback>{token.symbol.slice(0, 2)}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -177,16 +202,16 @@ export default function DashboardPage() {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {token.balance} {token.symbol}
+                          {formatDecimal(formatUnits(token.balance || 0n, token.decimals), 5)} {token.symbol}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{token.value}</p>
+                      <p className="font-semibold">{formatUSD(String(token.balanceInUsd) || "0")}</p>
                       <p
-                        className={`text-sm ${token.changePositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                        className={`text-sm ${true ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
                       >
-                        {token.change}
+                        {12.5 > 0 ? `+${12.5}%` : `-12.5%`}
                       </p>
                     </div>
                   </div>
