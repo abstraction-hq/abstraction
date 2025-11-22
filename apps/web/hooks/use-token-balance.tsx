@@ -26,6 +26,7 @@ export type TokenBalanceStore = {
   balances: TokenBalance[];
   loading: boolean;
   setBalances: (balances: TokenBalance[]) => void;
+  reset: () => void;
 }
 
 export const useTokenBalanceStore = create<TokenBalanceStore>()(
@@ -33,6 +34,7 @@ export const useTokenBalanceStore = create<TokenBalanceStore>()(
     balances: [],
     loading: true,
     setBalances: (balances: TokenBalance[]) => set({ balances }),
+    reset: () => set({ balances: [], loading: true }),
   })
 )
 

@@ -25,8 +25,9 @@ export function DashboardHeader() {
   const [mounted, setMounted] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const address = "0x71C...9A23" // Mock address
-  const fullAddress = "0x71C7656EC7ab88b098defB751B7401B5f6d89A23"
+  const config = useSmartAccount().config
+  const fullAddress = config?.account.address || "0x"
+  const address = fullAddress.slice(0, 6) + "..." + fullAddress.slice(-4)
 
   useEffect(() => {
     setMounted(true)

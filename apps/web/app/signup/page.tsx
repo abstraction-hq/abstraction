@@ -6,6 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { useSmartAccount } from "@/hooks/useSmartAccount"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +18,7 @@ export default function SignUpPage() {
   const [username, setUsername] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { createSmartAccount } = useSmartAccount()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,23 +32,10 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      // Simulate passkey creation
-      // In a real app, this would use the WebAuthn API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Store user info (in a real app, this would be handled by your backend)
-      localStorage.setItem(
-        "wallet_user",
-        JSON.stringify({
-          username,
-          address: "0x" + Math.random().toString(16).substring(2, 42),
-          createdAt: new Date().toISOString(),
-        }),
-      )
-
-      // Redirect to dashboard
+      await createSmartAccount(username)
       router.push("/dashboard")
     } catch (err) {
+      console.error(err)
       setError("Failed to create wallet. Please try again.")
       setIsLoading(false)
     }

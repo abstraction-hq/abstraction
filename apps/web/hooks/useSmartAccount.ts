@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Address, Call, createPublicClient, hashMessage, Hex, http, PublicClient, zeroAddress } from "viem"
 import { BundlerClient, createBundlerClient, createWebAuthnCredential, SmartAccount, toWebAuthnAccount } from "viem/account-abstraction"
 import { ICredential, useCredentialStore } from "../stores/useCredentialStore"
+import { useTokenBalanceStore } from "./use-token-balance"
 import { baseSepolia } from "viem/chains"
 import { FactoryAbi, factoryAddress, PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@abstraction/onchain"
 import { WebAuthnP256 } from "ox"
@@ -153,16 +154,14 @@ export const useSmartAccount = () => {
   const logout = useCallback(() => {
     setCredential(null)
     setConfig(null)
+    useTokenBalanceStore.getState().reset()
   }, [setCredential, setConfig])
 
   return {
-    loading: loading || configLoading,
-    estimateTransaction,
-    sendTransaction,
-    config,
     createSmartAccount,
     loginSmartAccount,
+    loading: loading || configLoading,
+    config,
     logout
   }
 }
-
