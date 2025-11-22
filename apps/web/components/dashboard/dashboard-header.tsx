@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useSmartAccount } from "@/hooks/useSmartAccount"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function DashboardHeader() {
   const router = useRouter()
+  const { logout } = useSmartAccount()
   const { setTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -37,7 +39,7 @@ export function DashboardHeader() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("wallet_user")
+    logout()
     router.push("/signin")
   }
 

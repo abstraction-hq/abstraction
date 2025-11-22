@@ -47,14 +47,14 @@ type ConfigStore = {
   config: Config | null;
   loading: boolean;
   setLoading: (loading: boolean) => void;
-  setConfig: (config: Config) => void;
+  setConfig: (config: Config | null) => void;
 }
 
 const useConfigStore = create<ConfigStore>()(
   (set) => ({
     config: null,
     loading: true,
-    setConfig: (config: Config) => set({ config }),
+    setConfig: (config: Config | null) => set({ config }),
     setLoading: (loading: boolean) => set({ loading }),
   })
 )
@@ -150,13 +150,19 @@ export const useSmartAccount = () => {
     return hash
   }, [config])
 
+  const logout = useCallback(() => {
+    setCredential(null)
+    setConfig(null)
+  }, [setCredential, setConfig])
+
   return {
     loading: loading || configLoading,
     estimateTransaction,
     sendTransaction,
     config,
     createSmartAccount,
-    loginSmartAccount
+    loginSmartAccount,
+    logout
   }
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { LayoutDashboard, Send, History, Settings, LogOut, Wallet, ArrowRightLeft, TrendingUp } from "lucide-react"
 import {
   Sidebar,
@@ -19,8 +19,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+import { useSmartAccount } from "@/hooks/useSmartAccount"
+
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { logout } = useSmartAccount()
 
   return (
     <Sidebar>
@@ -101,11 +105,16 @@ export function DashboardSidebar() {
             <span className="truncate text-xs text-muted-foreground">0x1234...5678</span>
           </div>
         </div>
-        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-destructive" asChild>
-          <Link href="/signin">
-            <LogOut className="mr-2 size-4" />
-            Sign Out
-          </Link>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-muted-foreground hover:text-destructive" 
+          onClick={() => {
+            logout()
+            router.push("/signin")
+          }}
+        >
+          <LogOut className="mr-2 size-4" />
+          Sign Out
         </Button>
       </SidebarFooter>
     </Sidebar>

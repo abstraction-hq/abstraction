@@ -10,7 +10,7 @@ export type ICredential = {
 interface ICredentialStore {
   credential: ICredential | null;
   loading: boolean;
-  setCredential: (cred: ICredential) => void;
+  setCredential: (cred: ICredential | null) => void;
 }
 
 export const useCredentialStore = create<ICredentialStore>()(
@@ -18,7 +18,7 @@ export const useCredentialStore = create<ICredentialStore>()(
     (set) => ({
       credential: null,
       loading: true,
-      setCredential: (cred: ICredential) => set({ credential: cred }),
+      setCredential: (cred: ICredential | null) => set({ credential: cred }),
     }),
     {
       name: "credential-storage",
