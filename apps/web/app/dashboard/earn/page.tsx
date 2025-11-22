@@ -1,211 +1,201 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { 
+  ArrowRightLeftIcon, 
+  WalletIcon, 
+  TrendingUpIcon, 
+  ClockIcon, 
+  ZapIcon, 
+  ShieldCheckIcon, 
+  InfoIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  FilterIcon
+} from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowRightLeftIcon, WalletIcon, TrendingUpIcon, ClockIcon, ZapIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 
 export default function EarnPage() {
-  const [amount, setAmount] = useState("1000")
-
+  const [amount, setAmount] = useState("")
+  
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Earn</h1>
-        <p className="text-muted-foreground">Deposit your assets to earn yield through secure protocols.</p>
+    <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Earn Yield</h1>
+          <p className="text-muted-foreground mt-1">Deposit your assets into secure, audited protocols to earn APY.</p>
+        </div>
+        <div className="flex items-center gap-2">
+           <Select defaultValue="ethereum">
+            <SelectTrigger className="w-[160px] bg-background">
+              <div className="flex items-center gap-2">
+                <div className="size-2 rounded-full bg-green-500" />
+                <SelectValue placeholder="Select Network" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ethereum">Ethereum</SelectItem>
+              <SelectItem value="polygon">Polygon</SelectItem>
+              <SelectItem value="arbitrum">Arbitrum</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="flex justify-center">
-        <Card className="w-full max-w-md">
-          <Tabs defaultValue="earn" className="w-full">
-            <CardHeader className="pb-0">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="earn">Earn</TabsTrigger>
-                <TabsTrigger value="manage">Manage</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
-              </TabsList>
-            </CardHeader>
+      <Tabs defaultValue="opportunities" className="space-y-6">
+        <TabsList className="bg-muted/50 p-1 h-auto w-full md:w-auto grid grid-cols-3 md:inline-flex">
+          <TabsTrigger value="opportunities" className="h-9 px-2 md:px-6 text-xs md:text-sm rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Opportunities</TabsTrigger>
+          <TabsTrigger value="portfolio" className="h-9 px-2 md:px-6 text-xs md:text-sm rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">My Portfolio</TabsTrigger>
+          <TabsTrigger value="activity" className="h-9 px-2 md:px-6 text-xs md:text-sm rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Activity</TabsTrigger>
+        </TabsList>
 
-            <CardContent className="pt-6">
-              <TabsContent value="earn" className="space-y-6 mt-0">
-                {/* Network Selector */}
-                <div className="flex items-center gap-2">
-                  <Select defaultValue="ethereum">
-                    <SelectTrigger className="w-fit h-8 gap-2 border-none bg-transparent px-0 hover:bg-transparent focus:ring-0 shadow-none font-medium">
-                      <div className="flex items-center justify-center size-5 rounded-full bg-slate-200 dark:bg-slate-800">
-                        <svg className="size-3" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
-                        </svg>
+        <TabsContent value="opportunities" className="space-y-6">
+          
+          {/* Featured Opportunity */}
+          <div className="grid md:grid-cols-3 gap-6">
+             <Card className="md:col-span-2 border-none shadow-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                     <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md">Featured Strategy</Badge>
+                     <TrendingUpIcon className="text-white/80 size-6" />
+                  </div>
+                  <CardTitle className="text-3xl mt-2">Yearn USDT Vault</CardTitle>
+                  <CardDescription className="text-blue-100 text-lg">Automated yield farming strategy for stablecoins.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-4 mt-4">
+                   <div>
+                      <div className="text-blue-200 text-sm font-medium">APY</div>
+                      <div className="text-3xl font-bold">6.42%</div>
+                   </div>
+                   <div>
+                      <div className="text-blue-200 text-sm font-medium">TVL</div>
+                      <div className="text-xl font-semibold">$12.5M</div>
+                   </div>
+                   <div>
+                      <div className="text-blue-200 text-sm font-medium">Risk</div>
+                      <div className="text-xl font-semibold flex items-center gap-1">
+                        <ShieldCheckIcon className="size-4" /> Low
                       </div>
-                      <SelectValue placeholder="Select Network" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ethereum">Ethereum</SelectItem>
-                      <SelectItem value="polygon">Polygon</SelectItem>
-                      <SelectItem value="arbitrum">Arbitrum</SelectItem>
-                    </SelectContent>
-                  </Select>
+                   </div>
+                </CardContent>
+                <CardFooter>
+                   <Button variant="secondary" className="w-full sm:w-auto font-semibold" size="lg">
+                      Deposit Now <ArrowRightLeftIcon className="ml-2 size-4" />
+                   </Button>
+                </CardFooter>
+             </Card>
+
+             <Card className="flex flex-col justify-center items-center text-center p-6 bg-muted/30 border-dashed">
+                <div className="p-4 bg-background rounded-full shadow-sm mb-4">
+                   <ZapIcon className="size-8 text-yellow-500" />
                 </div>
+                <h3 className="font-semibold text-lg">Boost Your Yield</h3>
+                <p className="text-muted-foreground text-sm mt-2 mb-6">Stake your governance tokens to increase your APY by up to 2.5x.</p>
+                <Button variant="outline">Learn More</Button>
+             </Card>
+          </div>
 
-                {/* Vault Section */}
-                <div className="rounded-xl border bg-card p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Vault</span>
+          {/* List of Vaults */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+               <h2 className="text-xl font-semibold">All Vaults</h2>
+               <div className="flex gap-2">
+                  <div className="relative">
+                     <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                     <Input placeholder="Search..." className="pl-9 w-[200px] h-9" />
                   </div>
-
-                  <div className="flex items-center justify-between gap-4">
-                    <Select defaultValue="usdt">
-                      <SelectTrigger className="w-[140px] border-none bg-transparent p-0 h-auto shadow-none focus:ring-0">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center justify-center size-8 rounded-full bg-emerald-500 text-white">
-                            <span className="font-bold text-xs">T</span>
-                          </div>
-                          <span className="text-2xl font-semibold">USDT</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="usdt">USDT</SelectItem>
-                        <SelectItem value="usdc">USDC</SelectItem>
-                        <SelectItem value="dai">DAI</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <div className="text-right">
-                      <Input
-                        type="text"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="text-right text-2xl font-semibold border-none bg-transparent p-0 h-auto shadow-none focus-visible:ring-0 text-red-500 w-[150px]"
-                      />
-                      <div className="text-sm text-muted-foreground">$998.864</div>
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-red-500 font-medium">Balance: 0 USDT</div>
-                </div>
-
-                {/* Earn Section */}
-                <div className="rounded-xl border bg-muted/30 p-4 flex items-center justify-between">
-                  <div className="space-y-1">
-                    <span className="text-sm font-medium text-muted-foreground">Earn</span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center justify-center size-6 rounded-full bg-blue-500 text-white">
-                        <span className="font-bold text-xs">S</span>
-                      </div>
-                      <span className="text-lg font-semibold">USDT</span>
-                    </div>
-                  </div>
-                  <div className="text-2xl font-bold">6.42%</div>
-                </div>
-
-                {/* Info Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      You'll receive <span className="font-medium text-foreground">ysUSDT</span> via
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-4 rounded-full bg-blue-600"></div>
-                      <span className="font-medium">Yearn Finance</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Estimated Yearly Earnings</span>
-                    <span className="font-medium">64.2 USDT</span>
-                  </div>
-                </div>
-
-                {/* Features List */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex gap-3 text-sm text-muted-foreground">
-                    <ArrowRightLeftIcon className="size-4 shrink-0 mt-0.5" />
-                    <p>When you deposit USDT you'll receive ysUSDT. You can trade this liquid asset at any time</p>
-                  </div>
-                  <div className="flex gap-3 text-sm text-muted-foreground">
-                    <ZapIcon className="size-4 shrink-0 mt-0.5" />
-                    <p>Earned yield is updated each block and accrues automatically</p>
-                  </div>
-                  <div className="flex gap-3 text-sm text-muted-foreground">
-                    <ClockIcon className="size-4 shrink-0 mt-0.5" />
-                    <p>When withdrawing, your assets will be available immediately</p>
-                  </div>
-                </div>
-
-                <Button className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700 text-white">Deposit</Button>
-
-                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                  <span>Powered by</span>
-                  <span className="font-semibold text-foreground">Yield.xyz</span>
-                  <TrendingUpIcon className="size-3" />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="manage" className="mt-0">
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                  <div className="p-4 rounded-full bg-muted">
-                    <WalletIcon className="size-8 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">No Active Deposits</h3>
-                    <p className="text-sm text-muted-foreground max-w-[200px]">
-                      You don't have any active deposits to manage yet.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      document
-                        .querySelector('[value="earn"]')
-                        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
-                    }
-                  >
-                    Start Earning
+                  <Button variant="outline" size="icon" className="h-9 w-9">
+                     <FilterIcon className="size-4" />
                   </Button>
-                </div>
-              </TabsContent>
+               </div>
+            </div>
 
-              <TabsContent value="activity" className="mt-0">
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                  <div className="p-4 rounded-full bg-muted">
-                    <History className="size-8 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">No Activity Yet</h3>
-                    <p className="text-sm text-muted-foreground max-w-[200px]">
-                      Your earning history will appear here once you start depositing.
-                    </p>
-                  </div>
+            <Card>
+               <div className="divide-y">
+                  {[1, 2, 3].map((i) => (
+                     <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center gap-4">
+                           <div className="flex -space-x-2">
+                              <Avatar className="border-2 border-background size-10">
+                                 <AvatarImage src="https://cryptologos.cc/logos/ethereum-eth-logo.png" />
+                                 <AvatarFallback>ETH</AvatarFallback>
+                              </Avatar>
+                              <Avatar className="border-2 border-background size-10">
+                                 <AvatarImage src="https://cryptologos.cc/logos/lido-dao-ldo-logo.png" />
+                                 <AvatarFallback>LDO</AvatarFallback>
+                              </Avatar>
+                           </div>
+                           <div>
+                              <div className="font-semibold">stETH / ETH</div>
+                              <div className="text-sm text-muted-foreground">Curve Finance</div>
+                           </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-8 sm:gap-12 text-left sm:text-right flex-1 sm:flex-none">
+                           <div>
+                              <div className="text-xs text-muted-foreground sm:hidden">APY</div>
+                              <div className="font-bold text-green-600">4.8%</div>
+                           </div>
+                           <div>
+                              <div className="text-xs text-muted-foreground sm:hidden">TVL</div>
+                              <div className="font-medium">$450M</div>
+                           </div>
+                           <div>
+                              <div className="text-xs text-muted-foreground sm:hidden">My Balance</div>
+                              <div className="font-medium text-muted-foreground">-</div>
+                           </div>
+                        </div>
+                        <Button size="sm">Deposit</Button>
+                     </div>
+                  ))}
+               </div>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="portfolio">
+          <Card>
+             <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                <div className="p-4 rounded-full bg-muted">
+                   <WalletIcon className="size-10 text-muted-foreground" />
                 </div>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
-      </div>
+                <div className="space-y-2">
+                   <h3 className="text-xl font-semibold">No Active Deposits</h3>
+                   <p className="text-muted-foreground max-w-[300px] mx-auto">
+                      You don't have any active deposits yet. Explore opportunities to start earning yield.
+                   </p>
+                </div>
+                <Button onClick={() => document.querySelector('[value="opportunities"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }))}>
+                   Explore Opportunities
+                </Button>
+             </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="activity">
+           <Card>
+             <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                <div className="p-4 rounded-full bg-muted">
+                   <ClockIcon className="size-10 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                   <h3 className="text-xl font-semibold">No Activity Yet</h3>
+                   <p className="text-muted-foreground max-w-[300px] mx-auto">
+                      Your transaction history will appear here.
+                   </p>
+                </div>
+             </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
-
-function History({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-      <path d="M12 7v5l4 2" />
-    </svg>
-  )
-}
-
