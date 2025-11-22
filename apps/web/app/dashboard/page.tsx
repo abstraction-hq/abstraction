@@ -127,16 +127,47 @@ export default function DashboardPage() {
            </CardContent>
         </Card>
 
-        <Card className="col-span-2 lg:col-span-1 flex flex-col justify-center items-center text-center p-6 border-none shadow-lg bg-card/50 backdrop-blur-sm">
-           <div className="p-4 bg-primary/10 rounded-full mb-4">
-              <Wallet className="size-8 text-primary" />
+        <Card className="col-span-2 lg:col-span-1 flex flex-col justify-center p-6 border-none shadow-lg bg-card/50 backdrop-blur-sm">
+           <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-lg">Asset Allocation</h3>
+              <Button variant="ghost" size="icon" className="size-8 rounded-full">
+                 <ExternalLink className="size-4 text-muted-foreground" />
+              </Button>
            </div>
-           <h3 className="font-semibold text-lg">Wallet Status</h3>
-           <div className="flex items-center gap-2 mt-2 mb-6">
-              <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm text-muted-foreground">Connected to Ethereum</span>
+           
+           <div className="space-y-6 w-full">
+              {/* Progress Bar */}
+              <div className="h-4 w-full rounded-full flex overflow-hidden">
+                 <div className="h-full bg-blue-500 w-[55%]" />
+                 <div className="h-full bg-green-500 w-[30%]" />
+                 <div className="h-full bg-purple-500 w-[15%]" />
+              </div>
+
+              {/* Legend */}
+              <div className="space-y-3">
+                 <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                       <div className="size-3 rounded-full bg-blue-500" />
+                       <span className="text-muted-foreground">ETH</span>
+                    </div>
+                    <span className="font-semibold">55%</span>
+                 </div>
+                 <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                       <div className="size-3 rounded-full bg-green-500" />
+                       <span className="text-muted-foreground">Stablecoins</span>
+                    </div>
+                    <span className="font-semibold">30%</span>
+                 </div>
+                 <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                       <div className="size-3 rounded-full bg-purple-500" />
+                       <span className="text-muted-foreground">Others</span>
+                    </div>
+                    <span className="font-semibold">15%</span>
+                 </div>
+              </div>
            </div>
-           <Button variant="outline" className="w-full">View Details</Button>
         </Card>
       </div>
 
