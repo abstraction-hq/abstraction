@@ -26,6 +26,8 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RecoveryPasswordSection } from "@/components/dashboard/recovery-password-section"
+
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -185,6 +187,21 @@ export default function SettingsPage() {
                </div>
              </CardContent>
            </Card>
+
+            {/* Recovery Password Card */}
+            <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <KeyIcon className="size-5 text-primary" /> Recovery Password
+                </CardTitle>
+                <CardDescription>
+                  Set a password to recover your wallet if you lose access to your passkey
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RecoveryPasswordSection />
+              </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
