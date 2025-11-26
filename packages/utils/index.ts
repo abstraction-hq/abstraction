@@ -19,4 +19,4 @@ export const parsePublicKey = (publicKey: Hex | Uint8Array): PublicKey => {
   }
 }
 
-export { getChain, getChainId, getChainName } from "./chain-config"
+export { getChain, getChainId, getChainName, getFactoryAddress } from "./chain-config"

@@ -24,3 +24,13 @@ export function getChainId(): number {
 export function getChainName(): string {
   return getChain().name;
 }
+
+/**
+ * Get the factory contract address for the current environment.
+ * Currently uses the same factory address for all chains.
+ */
+export function getFactoryAddress(): `0x${string}` {
+  // For now, using the same factory address for all chains
+  // This can be extended to support different addresses per chain if needed
+  return "0xcCb14De8AbA42358E5B489D99734B8Fb9AF197c0";
+}
