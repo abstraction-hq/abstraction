@@ -11,6 +11,8 @@ import { useTokenBalances } from "@/hooks/use-token-balance"
 import { useTransactions } from "@/hooks/use-transactions"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { formatUnits } from "viem"
+import { ReceiveModal } from "@/components/dashboard/receive-modal"
+import { useState } from "react"
 
 // Mock data
 const mockTransactions = [
@@ -103,6 +105,8 @@ export default function DashboardPage() {
   const { balances, isLoading: balancesLoading } = useTokenBalances("0x4fff0f708c768a46050f9b96c46c265729d1a62f"); // for testing
   const { transactions, isLoading: transactionsLoading } = useTransactions(walletAddress, 10);
   
+  const [receiveModalOpen, setReceiveModalOpen] = useState(false)
+  
   const balanceChange = "-12.5%"
   const balanceChangeValue = parseFloat(balanceChange)
   const isPositiveChange = balanceChangeValue >= 0
@@ -142,10 +146,15 @@ export default function DashboardPage() {
                    Send
                  </Link>
                </Button>
-               <Button size="sm" variant="secondary" className="w-full font-semibold shadow-sm bg-white/10 hover:bg-white/20 text-white border-none backdrop-blur-sm sm:h-11 sm:px-8">
-                 <ArrowDownLeft className="mr-1 sm:mr-2 size-3 sm:size-4" />
-                 Receive
-               </Button>
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  className="w-full font-semibold shadow-sm bg-white/10 hover:bg-white/20 text-white border-none backdrop-blur-sm sm:h-11 sm:px-8"
+                  onClick={() => setReceiveModalOpen(true)}
+                >
+                  <ArrowDownLeft className="mr-1 sm:mr-2 size-3 sm:size-4" />
+                  Receive
+                </Button>
                <Button size="sm" variant="secondary" className="w-full font-semibold shadow-sm bg-white/10 hover:bg-white/20 text-white border-none backdrop-blur-sm sm:h-11 sm:px-8" asChild>
                   <Link href="/dashboard/swap">
                     <ArrowRightLeft className="mr-1 sm:mr-2 size-3 sm:size-4" />
@@ -333,6 +342,13 @@ export default function DashboardPage() {
            </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Receive Modal */}
+      <ReceiveModal 
+        open={receiveModalOpen} 
+        onOpenChange={setReceiveModalOpen} 
+        address={walletAddress}
+      />
     </div>
   )
 }
