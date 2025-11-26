@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Address, Call, createPublicClient, hashMessage, Hex, http, PublicClient } from "viem"
 import { BundlerClient, createBundlerClient, createWebAuthnCredential, SmartAccount, toWebAuthnAccount } from "viem/account-abstraction"
 import { ICredential, useCredentialStore } from "../stores/use-credential-store"
-import { baseSepolia } from "viem/chains"
+import { getChain } from "@abstraction/utils"
 import { PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@abstraction/onchain"
 import { WebAuthnP256 } from "ox"
 import { readContract } from "viem/actions"
@@ -15,10 +15,11 @@ type Config = {
 }
 
 const initConfig = async (credential: ICredential): Promise<Config> => {
+  const chain: any = getChain()
   const client = createPublicClient({
-    chain: baseSepolia,
+    chain,
     transport: http()
-  }) as PublicClient
+  })
 
   const signer = toWebAuthnAccount({
     credential,
@@ -113,10 +114,11 @@ export const useSmartAccount = () => {
     const walletAddress = data.wallet.address as Address;
     
     // Get the signer public key from the wallet contract
+    const chain: any = getChain()
     const client = createPublicClient({
-      chain: baseSepolia,
+      chain,
       transport: http()
-    }) as PublicClient
+    })
 
     const signerKey = await readContract(client, {
       abi: WalletAbi,

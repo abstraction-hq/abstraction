@@ -18,3 +18,5 @@ export const parsePublicKey = (publicKey: Hex | Uint8Array): PublicKey => {
     y: BigInt(bytesToHex(y)),
   }
 }
+
+export { getChain, getChainId, getChainName } from "./chain-config"

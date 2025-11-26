@@ -1,5 +1,5 @@
 import { createPublicClient, http, type Chain, type PublicClient } from "viem";
-import { mainnet } from "viem/chains";
+import { getChain } from "@abstraction/utils";
 import mongoose from "mongoose";
 import { WalletSchema, IndexerStateSchema } from "@abstraction/database";
 import "dotenv/config";
@@ -132,7 +132,7 @@ class Indexer {
 }
 
 const main = async () => {
-  const indexer = new Indexer(mainnet);
+  const indexer = new Indexer(getChain());
   await indexer.init();
   await indexer.start();
   
