@@ -100,7 +100,7 @@ export default function DashboardPage() {
   const { config } = useSmartAccount();
   const walletAddress = config?.account?.address;
   
-  const { balances } = useTokenBalances(walletAddress);
+  const { balances, isLoading: balancesLoading } = useTokenBalances("0x4fff0f708c768a46050f9b96c46c265729d1a62f"); // for testing
   const { transactions, isLoading: transactionsLoading } = useTransactions(walletAddress, 10);
   
   const balanceChange = "+12.5%"
@@ -204,43 +204,62 @@ export default function DashboardPage() {
         </div>
 
         <TabsContent value="tokens" className="space-y-4">
-           <div className="grid gap-4">
-             {balances.map((token) => (
-               <div
-                 key={token.address}
-                 className="group flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/30 hover:shadow-md transition-all duration-200"
-               >
-                 <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                   <Avatar className="size-10 sm:size-12 border-2 border-background shadow-sm shrink-0">
-                     <AvatarImage src={token.logoURI || "/placeholder.svg"} alt={token.name} />
-                     <AvatarFallback className="font-bold">{token.symbol.slice(0, 2)}</AvatarFallback>
-                   </Avatar>
-                   <div className="min-w-0">
-                     <div className="flex items-center gap-2">
-                       <p className="font-bold text-base sm:text-lg truncate">{token.symbol}</p>
-                       <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-muted-foreground hidden sm:inline-flex">
-                         {token.name}
-                       </Badge>
-                     </div>
-                     <p className="text-sm text-muted-foreground font-medium truncate">
-                       {formatDecimal(formatUnits(token.balance || 0n, token.decimals), 5)} {token.symbol}
-                     </p>
-                   </div>
-                 </div>
-                 <div className="text-right shrink-0 ml-2">
-                   <p className="font-bold text-base sm:text-lg">{formatUSD(String(token.balanceInUsd) || "0")}</p>
-                   <div className="flex items-center justify-end gap-1">
-                      {12.5 > 0 ? <TrendingUp className="size-3 text-green-500" /> : <TrendingDown className="size-3 text-red-500" />}
-                      <p
-                        className={`text-sm font-medium ${true ? "text-green-500" : "text-red-500"}`}
-                      >
-                        {12.5 > 0 ? `+${12.5}%` : `-12.5%`}
-                      </p>
-                   </div>
-                 </div>
+           {balancesLoading ? (
+             <div className="flex items-center justify-center p-12">
+               <div className="flex flex-col items-center gap-3">
+                 <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                 <p className="text-sm text-muted-foreground">Loading assets...</p>
                </div>
-             ))}
-           </div>
+             </div>
+           ) : balances.length === 0 ? (
+             <div className="flex flex-col items-center justify-center p-12 text-center">
+               <div className="size-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                 <Wallet className="size-8 text-muted-foreground" />
+               </div>
+               <h3 className="font-semibold text-lg mb-2">No Assets Found</h3>
+               <p className="text-sm text-muted-foreground max-w-sm">
+                 Your wallet doesn't have any tokens yet. Start by receiving some tokens.
+               </p>
+             </div>
+           ) : (
+             <div className="grid gap-4">
+               {balances.map((token) => (
+                 <div
+                   key={token.address}
+                   className="group flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/30 hover:shadow-md transition-all duration-200"
+                 >
+                   <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                     <Avatar className="size-10 sm:size-12 border-2 border-background shadow-sm shrink-0">
+                       <AvatarImage src={token.logoURI || "/placeholder.svg"} alt={token.name} />
+                       <AvatarFallback className="font-bold">{token.symbol.slice(0, 2)}</AvatarFallback>
+                     </Avatar>
+                     <div className="min-w-0">
+                       <div className="flex items-center gap-2">
+                         <p className="font-bold text-base sm:text-lg truncate">{token.symbol}</p>
+                         <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-muted-foreground hidden sm:inline-flex">
+                           {token.name}
+                         </Badge>
+                       </div>
+                       <p className="text-sm text-muted-foreground font-medium truncate">
+                         {formatDecimal(formatUnits(token.balance || 0n, token.decimals), 5)} {token.symbol}
+                       </p>
+                     </div>
+                   </div>
+                   <div className="text-right shrink-0 ml-2">
+                     <p className="font-bold text-base sm:text-lg">{formatUSD(String(token.balanceInUsd) || "0")}</p>
+                     <div className="flex items-center justify-end gap-1">
+                        {12.5 > 0 ? <TrendingUp className="size-3 text-green-500" /> : <TrendingDown className="size-3 text-red-500" />}
+                        <p
+                          className={`text-sm font-medium ${true ? "text-green-500" : "text-red-500"}`}
+                        >
+                          {12.5 > 0 ? `+${12.5}%` : `-12.5%`}
+                        </p>
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react"
 import { Address, Call, createPublicClient, hashMessage, Hex, http, PublicClient } from "viem"
 import { BundlerClient, createBundlerClient, createWebAuthnCredential, SmartAccount, toWebAuthnAccount } from "viem/account-abstraction"
 import { ICredential, useCredentialStore } from "../stores/use-credential-store"
-import { useTokenBalanceStore } from "./use-token-balance"
 import { baseSepolia } from "viem/chains"
 import { PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@abstraction/onchain"
 import { WebAuthnP256 } from "ox"
@@ -166,7 +165,8 @@ export const useSmartAccount = () => {
   const logout = useCallback(() => {
     setCredential(null)
     setConfig(null)
-    useTokenBalanceStore.getState().reset()
+    // Note: SWR cache will be automatically cleared when credential/config changes
+    // since the cache key depends on the wallet address
   }, [setCredential, setConfig])
 
   return {

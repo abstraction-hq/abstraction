@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from "react";
-import { Address, zeroAddress } from "viem";
-import { create } from "zustand";
+import useSWR from "swr";
+import { Address } from "viem";
 
 const BUNGEE_API_BASE_URL = "https://public-backend.bungee.exchange";
 
@@ -22,40 +21,20 @@ export type TokenBalance = {
   logoURI?: string
 }
 
-export type TokenBalanceStore = {
-  balances: TokenBalance[];
-  loading: boolean;
-  setBalances: (balances: TokenBalance[]) => void;
-  reset: () => void;
-}
+const fetchTokenBalances = async (address: Address): Promise<TokenBalance[]> => {
+  const url = `${BUNGEE_API_BASE_URL}/api/v1/tokens/list`;
+  const params = {
+    userAddress: address,
+    chainIds: "1"
+  };
 
-export const useTokenBalanceStore = create<TokenBalanceStore>()(
-  (set) => ({
-    balances: [],
-    loading: true,
-    setBalances: (balances: TokenBalance[]) => set({ balances }),
-    reset: () => set({ balances: [], loading: true }),
-  })
-)
+  const queryParams = new URLSearchParams(params as Record<string, string>).toString();
+  const response = await fetch(`${url}?${queryParams}`);
+  const { result } = await response.json();
 
-export const useTokenBalances = (address: Address | undefined) => {
-  const setBalances = useTokenBalanceStore(s => s.setBalances);
-  const balances = useTokenBalanceStore(s => s.balances);
-  const loading = useTokenBalanceStore(s => s.loading);
-
-  const fetchBalances = useCallback(async () => {
-    const url = `${BUNGEE_API_BASE_URL}/api/v1/tokens/list`;
-    const params = {
-      userAddress: address,
-      // cover many chains; you can fine-tune
-      chainIds: "1"
-    };
-
-    const queryParams = new URLSearchParams(params as Record<string, string>).toString();
-    const response = await fetch(`${url}?${queryParams}`);
-    const { result } = await response.json();
-
-    const balances: TokenBalance[] = result["1"].filter((token: any) => token.balance != "0").map((token: any) => ({
+  const balances: TokenBalance[] = result["1"]
+    .filter((token: any) => token.balance != "0")
+    .map((token: any) => ({
       address: token.address as Address,
       type: TokenType.ERC20,
       balance: BigInt(token.balance),
@@ -64,25 +43,25 @@ export const useTokenBalances = (address: Address | undefined) => {
       name: token.name,
       symbol: token.symbol,
       logoURI: token.logoURI,
-    }))
+    }));
 
-    setBalances(balances);
-  }, [address, setBalances]);
+  return balances;
+};
 
-  useEffect(() => {
-    if (!address) return
-    if (balances.length > 0) return
-    fetchBalances()
-  }, [address, fetchBalances, balances]);
-
-
-  const fetchBalance = (address: Address) => {
-  }
+export const useTokenBalances = (address: Address | undefined) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    address ? `token-balances-${address}` : null,
+    () => fetchTokenBalances(address!),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
 
   return {
-    balances,
-    loading,
-    fetchBalances,
-    fetchBalance,
-  }
-}
+    balances: data || [],
+    isLoading,
+    error,
+    refetch: mutate,
+  };
+};
