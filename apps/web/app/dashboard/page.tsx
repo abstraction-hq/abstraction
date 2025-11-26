@@ -14,59 +14,6 @@ import { formatUnits } from "viem"
 import { ReceiveModal } from "@/components/dashboard/receive-modal"
 import { useState } from "react"
 
-// Mock data
-const mockTransactions = [
-  {
-    id: 1,
-    type: "send",
-    token: "ETH",
-    amount: "-0.5",
-    value: "-$850.00",
-    to: "0x742d...4e8a",
-    timestamp: "2 hours ago",
-    status: "completed",
-  },
-  {
-    id: 2,
-    type: "receive",
-    token: "USDC",
-    amount: "+500.00",
-    value: "+$500.00",
-    from: "0x9f3c...2b1d",
-    timestamp: "5 hours ago",
-    status: "completed",
-  },
-  {
-    id: 3,
-    type: "swap",
-    token: "MATIC",
-    amount: "200.00 → 0.1 ETH",
-    value: "$160.00",
-    timestamp: "1 day ago",
-    status: "completed",
-  },
-  {
-    id: 4,
-    type: "send",
-    token: "ARB",
-    amount: "-50.00",
-    value: "-$60.00",
-    to: "0x1a2b...9c8d",
-    timestamp: "2 days ago",
-    status: "completed",
-  },
-  {
-    id: 5,
-    type: "receive",
-    token: "ETH",
-    amount: "+1.0",
-    value: "+$1,700.00",
-    from: "0x5e6f...3a4b",
-    timestamp: "3 days ago",
-    status: "completed",
-  },
-]
-
 const formatDecimal = (v: string, max = 6) => {
   if (!v) return "";
   const cleaned = v.replace(/[^0-9.]/g, "");
@@ -107,7 +54,7 @@ export default function DashboardPage() {
   
   const [receiveModalOpen, setReceiveModalOpen] = useState(false)
   
-  const balanceChange = "-12.5%"
+  const balanceChange = "+12.5%"
   const balanceChangeValue = parseFloat(balanceChange)
   const isPositiveChange = balanceChangeValue >= 0
   const totalUsdBalance = balances.reduce((acc, token) => acc + (token.balanceInUsd || 0), 0)
