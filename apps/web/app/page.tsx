@@ -16,7 +16,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-center size-10 rounded-lg bg-primary text-primary-foreground">
               <WalletIcon className="size-6" />
             </div>
-            <span className="text-xl font-bold">Abstraction Wallet</span>
+            <span className="text-xl font-bold">Openpass Wallet</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
@@ -71,7 +71,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Why Choose Abstraction Wallet?
+              Why Choose Openpass Wallet?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Experience the next generation of crypto security with features designed for everyone
@@ -164,7 +164,7 @@ export default function LandingPage() {
                 Your Assets, Protected by the Best
               </h2>
               <p className="text-lg text-muted-foreground">
-                Abstraction Wallet combines account abstraction with passkey technology to create the most secure and user-friendly crypto wallet experience.
+                Openpass Wallet combines account abstraction with passkey technology to create the most secure and user-friendly crypto wallet experience.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
@@ -235,7 +235,7 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground">
                   <WalletIcon className="size-5" />
                 </div>
-                <span className="font-bold">Abstraction Wallet</span>
+                <span className="font-bold">Openpass Wallet</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 The next generation of crypto wallets, powered by account abstraction and passkeys.
@@ -276,7 +276,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t mt-12 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 Abstraction Wallet. All rights reserved.</p>
+            <p>&copy; 2025 Openpass Wallet. All rights reserved.</p>
           </div>
         </div>
       </footer>

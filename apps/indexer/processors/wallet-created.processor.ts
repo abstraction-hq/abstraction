@@ -1,6 +1,6 @@
 import { parseAbiItem } from "viem";
 import mongoose from "mongoose";
-import { WalletSchema } from "@abstraction/database";
+import { WalletSchema } from "@openpass/database";
 
 const Wallet = mongoose.models.Wallet || mongoose.model("Wallet", WalletSchema);
 

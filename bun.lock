@@ -12,7 +12,7 @@
     "apps/api": {
       "name": "api",
       "dependencies": {
-        "@abstraction/database": "workspace:*",
+        "@openpass/database": "workspace:*",
         "dotenv": "^16.0.0",
         "hono": "^4.0.0",
         "mongoose": "^9.0.0",
@@ -27,7 +27,7 @@
     "apps/indexer": {
       "name": "indexer",
       "dependencies": {
-        "@abstraction/database": "workspace:*",
+        "@openpass/database": "workspace:*",
         "dotenv": "^16.0.0",
         "mongoose": "^8.0.0",
         "viem": "latest",
@@ -43,10 +43,10 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
-        "@abstraction/api-client": "workspace:*",
-        "@abstraction/onchain": "workspace:*",
-        "@abstraction/ui": "workspace:*",
-        "@abstraction/utils": "workspace:*",
+        "@openpass/api-client": "workspace:*",
+        "@openpass/onchain": "workspace:*",
+        "@openpass/ui": "workspace:*",
+        "@openpass/utils": "workspace:*",
         "@passwordless-id/webauthn": "^2.3.1",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-avatar": "^1.1.11",
@@ -92,14 +92,14 @@
       },
     },
     "packages/api-client": {
-      "name": "@abstraction/api-client",
+      "name": "@openpass/api-client",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5",
       },
     },
     "packages/database": {
-      "name": "@abstraction/database",
+      "name": "@openpass/database",
       "dependencies": {
         "@prisma/client": "^7.0.0",
         "mongodb": "^7.0.0",
@@ -130,7 +130,7 @@
       },
     },
     "packages/onchain": {
-      "name": "@abstraction/onchain",
+      "name": "@openpass/onchain",
       "dependencies": {
         "@noble/curves": "^2.0.1",
         "ox": "^0.9.14",
@@ -147,7 +147,7 @@
       "version": "0.0.0",
     },
     "packages/ui": {
-      "name": "@abstraction/ui",
+      "name": "@openpass/ui",
       "version": "0.0.0",
       "dependencies": {
         "react": "^19.2.0",
@@ -164,7 +164,7 @@
       },
     },
     "packages/utils": {
-      "name": "@abstraction/utils",
+      "name": "@openpass/utils",
       "dependencies": {
         "@peculiar/asn1-ecc": "^2.6.0",
         "@peculiar/asn1-schema": "^2.6.0",
@@ -179,16 +179,6 @@
     },
   },
   "packages": {
-    "@abstraction/api-client": ["@abstraction/api-client@workspace:packages/api-client"],
-
-    "@abstraction/database": ["@abstraction/database@workspace:packages/database"],
-
-    "@abstraction/onchain": ["@abstraction/onchain@workspace:packages/onchain"],
-
-    "@abstraction/ui": ["@abstraction/ui@workspace:packages/ui"],
-
-    "@abstraction/utils": ["@abstraction/utils@workspace:packages/utils"],
-
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
 
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
@@ -322,6 +312,16 @@
     "@nodelib/fs.stat": ["@nodelib/fs.stat@2.0.5", "", {}, "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A=="],
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
+
+    "@openpass/api-client": ["@openpass/api-client@workspace:packages/api-client"],
+
+    "@openpass/database": ["@openpass/database@workspace:packages/database"],
+
+    "@openpass/onchain": ["@openpass/onchain@workspace:packages/onchain"],
+
+    "@openpass/ui": ["@openpass/ui@workspace:packages/ui"],
+
+    "@openpass/utils": ["@openpass/utils@workspace:packages/utils"],
 
     "@passwordless-id/webauthn": ["@passwordless-id/webauthn@2.3.1", "", {}, "sha512-n75LOVz9J24FhEiLHiAfqC2gxh2wXJ4G+nvMxRy6fTpmhg6lK+tKwp/GZaXZjRXgUtPWHRVMtvCHKQQCfojXmw=="],
 

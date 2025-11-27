@@ -1,6 +1,6 @@
 import { parseAbiItem } from "viem";
 import mongoose from "mongoose";
-import { TransactionSchema } from "@abstraction/database";
+import { TransactionSchema } from "@openpass/database";
 
 const Transaction = mongoose.models.Transaction || mongoose.model("Transaction", TransactionSchema);
 

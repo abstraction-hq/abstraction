@@ -1,6 +1,6 @@
 import { parseAbiItem, zeroAddress } from "viem";
 import mongoose from "mongoose";
-import { PositionSchema, WalletSchema } from "@abstraction/database";
+import { PositionSchema, WalletSchema } from "@openpass/database";
 
 const Position = mongoose.models.Position || mongoose.model("Position", PositionSchema);
 const Wallet = mongoose.models.Wallet || mongoose.model("Wallet", WalletSchema);

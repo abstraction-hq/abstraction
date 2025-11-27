@@ -1,5 +1,5 @@
 /**
- * @abstraction/api-client
+ * @openpass/api-client
  * 
  * TypeScript client SDK for the Abstraction API
  */

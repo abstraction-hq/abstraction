@@ -1,5 +1,5 @@
 {
-  "name": "@abstraction/onchain",
+  "name": "@openpass/onchain",
   "module": "index.ts",
   "type": "module",
   "private": true,

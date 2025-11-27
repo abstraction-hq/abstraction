@@ -5,12 +5,12 @@ import type {
   Wallet as WalletType,
   Transaction as TransactionType,
   Position as PositionType,
-} from '@abstraction/database';
+} from '@openpass/database';
 import { 
   WalletSchema, 
   TransactionSchema, 
   PositionSchema 
-} from '@abstraction/database';
+} from '@openpass/database';
 import 'dotenv/config';
 
 const Wallet = (mongoose.models.Wallet || mongoose.model('Wallet', WalletSchema)) as Model<WalletType>;

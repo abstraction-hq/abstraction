@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from "react"
 import { Address, Call, createPublicClient, hashMessage, Hex, http, PublicClient } from "viem"
 import { BundlerClient, createBundlerClient, createWebAuthnCredential, SmartAccount, toWebAuthnAccount } from "viem/account-abstraction"
 import { ICredential, useCredentialStore } from "../stores/use-credential-store"
-import { getChain } from "@abstraction/utils"
-import { PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@abstraction/onchain"
+import { getChain } from "@openpass/utils";
+import { PublicKey, serializePublicKey, toAbstractionSmartAccount, WalletAbi } from "@openpass/onchain"
 import { WebAuthnP256 } from "ox"
 import { readContract } from "viem/actions"
 import { create } from "zustand"
+
 
 type Config = {
   account: SmartAccount,

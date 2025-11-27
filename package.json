@@ -1,5 +1,5 @@
 {
-  "name": "abstraction",
+  "name": "openpass",
   "private": true,
   "scripts": {
     "build": "turbo run build",

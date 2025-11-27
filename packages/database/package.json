@@ -1,5 +1,5 @@
 {
-  "name": "@abstraction/database",
+  "name": "@openpass/database",
   "module": "index.ts",
   "type": "module",
   "private": true,

@@ -6,7 +6,7 @@ import { entryPoint07Abi, entryPoint07Address, getUserOperationHash, toSmartAcco
 import { readContract } from "viem/actions";
 import { Signature } from "ox";
 import { numberToBytesBE } from "@noble/curves/utils.js";
-import { getFactoryAddress } from "@abstraction/utils";
+import { getFactoryAddress } from "@openpass/utils";
 
 export const accountInitCodeHash: Hex = "0x214f2447c0997c4d2ed97a0d3ee3f186463f7636a63bc48358930c664888998a"
 

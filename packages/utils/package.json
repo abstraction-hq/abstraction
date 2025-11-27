@@ -1,5 +1,5 @@
 {
-  "name": "@abstraction/utils",
+  "name": "@openpass/utils",
   "module": "index.ts",
   "type": "module",
   "private": true,

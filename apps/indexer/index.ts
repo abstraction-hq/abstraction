@@ -1,7 +1,7 @@
 import { createPublicClient, http, type Chain, type PublicClient } from "viem";
-import { getChain } from "@abstraction/utils";
+import { getChain } from "@openpass/utils";
 import mongoose from "mongoose";
-import { WalletSchema, IndexerStateSchema } from "@abstraction/database";
+import { WalletSchema, IndexerStateSchema } from "@openpass/database";
 import "dotenv/config";
 import { processWalletCreated, walletCreatedEvent } from "./processors/wallet-created.processor";
 import { processRecoverCompleted, recoverCompletedEvent, processRequestRecovery, requestRecoveryEvent } from "./processors/recovery.processor";

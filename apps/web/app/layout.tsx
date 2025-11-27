@@ -8,9 +8,9 @@ import "./globals.css"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
-// Updated metadata for Abstraction Wallet
+// Updated metadata for Openpass Wallet
 export const metadata: Metadata = {
-  title: "Abstraction Wallet - Secure Crypto Wallet with Passkey",
+  title: "Openpass Wallet - Secure Crypto Wallet with Passkey",
   description: "Secure your digital assets with account abstraction and passwordless authentication",
   generator: "v0.app",
   icons: {

@@ -11,10 +11,10 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@abstraction/api-client": "workspace:*",
-    "@abstraction/onchain": "workspace:*",
-    "@abstraction/ui": "workspace:*",
-    "@abstraction/utils": "workspace:*",
+    "@openpass/api-client": "workspace:*",
+    "@openpass/onchain": "workspace:*",
+    "@openpass/ui": "workspace:*",
+    "@openpass/utils": "workspace:*",
     "@passwordless-id/webauthn": "^2.3.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
