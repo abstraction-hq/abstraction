@@ -12,7 +12,7 @@ import { useTransactions } from "@/hooks/use-transactions"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 import { formatUnits } from "viem"
 import { ReceiveModal } from "@/components/dashboard/receive-modal"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 
 const formatDecimal = (v: string, max = 6) => {
   if (!v) return "";
@@ -58,6 +58,26 @@ export default function DashboardPage() {
   const balanceChangeValue = parseFloat(balanceChange)
   const isPositiveChange = balanceChangeValue >= 0
   const totalUsdBalance = balances.reduce((acc, token) => acc + (token.balanceInUsd || 0), 0)
+
+  const assetAllocation = useMemo(() => {
+    const eth = balances
+      .filter(t => t.symbol === "ETH" || t.symbol === "WETH")
+      .reduce((acc, t) => acc + (t.balanceInUsd || 0), 0)
+    
+    const stable = balances
+      .filter(t => ["USDC", "USDT", "DAI", "FDUSD", "USDe"].includes(t.symbol))
+      .reduce((acc, t) => acc + (t.balanceInUsd || 0), 0)
+    
+    const other = totalUsdBalance - eth - stable
+
+    const data = [
+      { label: "ETH", value: totalUsdBalance > 0 ? (eth / totalUsdBalance) * 100 : 0, color: "bg-blue-500" },
+      { label: "Stablecoins", value: totalUsdBalance > 0 ? (stable / totalUsdBalance) * 100 : 0, color: "bg-green-500" },
+      { label: "Others", value: totalUsdBalance > 0 ? (other / totalUsdBalance) * 100 : 0, color: "bg-purple-500" }
+    ]
+
+    return data.sort((a, b) => b.value - a.value)
+  }, [balances, totalUsdBalance])
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto py-8 px-4">
@@ -122,35 +142,24 @@ export default function DashboardPage() {
            
            <div className="space-y-6 w-full">
               {/* Progress Bar */}
-              <div className="h-4 w-full rounded-full flex overflow-hidden">
-                 <div className="h-full bg-blue-500 w-[55%]" />
-                 <div className="h-full bg-green-500 w-[30%]" />
-                 <div className="h-full bg-purple-500 w-[15%]" />
+              <div className="h-4 w-full rounded-full flex overflow-hidden bg-muted/30">
+                 {assetAllocation.map((item) => (
+                    item.value > 0 && <div key={item.label} className={`h-full ${item.color}`} style={{ width: `${item.value}%` }} />
+                 ))}
+                 {totalUsdBalance === 0 && <div className="h-full w-full bg-muted" />}
               </div>
 
               {/* Legend */}
               <div className="space-y-3">
-                 <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                       <div className="size-3 rounded-full bg-blue-500" />
-                       <span className="text-muted-foreground">ETH</span>
-                    </div>
-                    <span className="font-semibold">55%</span>
-                 </div>
-                 <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                       <div className="size-3 rounded-full bg-green-500" />
-                       <span className="text-muted-foreground">Stablecoins</span>
-                    </div>
-                    <span className="font-semibold">30%</span>
-                 </div>
-                 <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                       <div className="size-3 rounded-full bg-purple-500" />
-                       <span className="text-muted-foreground">Others</span>
-                    </div>
-                    <span className="font-semibold">15%</span>
-                 </div>
+                 {assetAllocation.map((item) => (
+                    <div key={item.label} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                           <div className={`size-3 rounded-full ${item.color}`} />
+                           <span className="text-muted-foreground">{item.label}</span>
+                        </div>
+                        <span className="font-semibold">{item.value.toFixed(1)}%</span>
+                     </div>
+                 ))}
               </div>
            </div>
         </Card>
