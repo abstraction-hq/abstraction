@@ -23,10 +23,8 @@ export const TransactionSchema = new Schema<Transaction>({
   status: { type: String, enum: ["pending", "success", "failed"], default: "pending" },
   timestamp: { type: Date, default: Date.now },
   value: { type: String, required: true },
-  to: { type: String, required: true },
-  from: { type: String, required: true },
+  to: { type: String, required: false },
+  from: { type: String, required: false },
 });
 
 TransactionSchema.index({ walletAddress: 1 });
-TransactionSchema.index({ from: 1 });
-TransactionSchema.index({ to: 1 });
