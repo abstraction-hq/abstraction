@@ -11,7 +11,8 @@
     "viem": "latest",
     "mongoose": "^8.0.0",
     "dotenv": "^16.0.0",
-    "@openpass/database": "workspace:*"
+    "@openpass/database": "workspace:*",
+    "@openpass/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest"
