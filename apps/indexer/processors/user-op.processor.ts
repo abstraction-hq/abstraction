@@ -6,7 +6,7 @@ const Transaction = mongoose.models.Transaction || mongoose.model("Transaction",
 
 export const userOperationEvent = parseAbiItem('event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)');
 
-export const processUserOperation = async (log: any, chainId: number, entryPointAddress: string) => {
+export const processUserOperation = async (log: any, chainId: number) => {
   const { userOpHash, sender, paymaster, nonce, success, actualGasCost, actualGasUsed } = log.args;
   if (userOpHash && sender) {
     try {
@@ -23,8 +23,6 @@ export const processUserOperation = async (log: any, chainId: number, entryPoint
         },
         status: success ? "success" : "failed",
         value: "0",
-        to: entryPointAddress,
-        from: sender,
         timestamp: new Date(),
       });
       console.log(`Transaction (UserOp) saved: ${userOpHash}`);

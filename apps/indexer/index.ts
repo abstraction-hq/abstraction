@@ -1,5 +1,5 @@
 import { createPublicClient, http, type Chain, type PublicClient } from "viem";
-import { getChain } from "@openpass/utils";
+import { getChain, getFactoryAddress } from "@openpass/utils";
 import mongoose from "mongoose";
 import { WalletSchema, IndexerStateSchema } from "@openpass/database";
 import "dotenv/config";
@@ -54,8 +54,7 @@ class Indexer {
   }
 
   crawl = async () => {
-    const factoryAddress = process.env.FACTORY_ADDRESS as `0x${string}`;
-    const entryPointAddress = process.env.ENTRYPOINT_ADDRESS as `0x${string}`;
+    const factoryAddress = getFactoryAddress();
     
     if (!factoryAddress) {
       console.error("FACTORY_ADDRESS env variable is not set");
@@ -93,10 +92,7 @@ class Indexer {
       // Note: We can only combine if we pass multiple events.
       // Viem getLogs supports 'events' array.
       
-      const events: any[] = [walletCreatedEvent, recoverCompletedEvent, requestRecoveryEvent, receiveEthEvent];
-      if (entryPointAddress) {
-        events.push(userOperationEvent as any);
-      }
+      const events: any[] = [walletCreatedEvent, recoverCompletedEvent, requestRecoveryEvent, receiveEthEvent, userOperationEvent];
 
       const logs = await this.client.getLogs({
         events: events,
@@ -108,7 +104,7 @@ class Indexer {
         if (log.eventName === 'WalletCreated') {
           await processWalletCreated(log, this.chainId);
         } else if (log.eventName === 'UserOperationEvent') {
-          await processUserOperation(log, this.chainId, entryPointAddress);
+          await processUserOperation(log, this.chainId);
         } else if (log.eventName === 'RecoverCompleted') {
           await processRecoverCompleted(log, this.chainId);
         } else if (log.eventName === 'RequestRecovery') {
