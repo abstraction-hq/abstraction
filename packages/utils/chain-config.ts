@@ -32,5 +32,5 @@ export function getChainName(): string {
 export function getFactoryAddress(): `0x${string}` {
   // For now, using the same factory address for all chains
   // This can be extended to support different addresses per chain if needed
-  return "0xcCb14De8AbA42358E5B489D99734B8Fb9AF197c0";
+  return "0xcC061936A53524b5579908B1C3CFbAb04D0610C4";
 }
