@@ -76,8 +76,8 @@ export default function DashboardPage() {
                  variant="secondary" 
                  className={`${
                    isPositiveChange 
-                     ? 'bg-green-500/20 hover:bg-green-500/30 text-green-100' 
-                     : 'bg-red-500/20 hover:bg-red-500/30 text-red-100'
+                     ? 'bg-green-500 text-green-100' 
+                     : 'bg-red-500 text-red-100'
                  } border-none backdrop-blur-md gap-1 px-2 py-0.5`}
                >
                  {isPositiveChange ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}

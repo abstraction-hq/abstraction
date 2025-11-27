@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { useSmartAccount } from "@/hooks/use-smart-account"
+import { Logo } from "@/components/ui/logo"
 
 export function DashboardSidebar() {
   const pathname = usePathname()
@@ -30,10 +31,8 @@ export function DashboardSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Wallet className="size-5" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">Abstraction</span>
+          <Logo />
+          <span className="text-lg font-bold tracking-tight">OpenPass</span>
         </Link>
       </SidebarHeader>
       <SidebarSeparator />
@@ -94,29 +93,6 @@ export function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-          <Avatar className="size-8">
-            <AvatarImage src="/placeholder-user.jpg" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-sm font-medium">User</span>
-            <span className="truncate text-xs text-muted-foreground">0x1234...5678</span>
-          </div>
-        </div>
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-muted-foreground hover:text-destructive" 
-          onClick={() => {
-            logout()
-            router.push("/signin")
-          }}
-        >
-          <LogOut className="mr-2 size-4" />
-          Sign Out
-        </Button>
-      </SidebarFooter>
     </Sidebar>
   )
 }
