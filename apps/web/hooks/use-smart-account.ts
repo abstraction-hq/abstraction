@@ -8,7 +8,6 @@ import { WebAuthnP256 } from "ox"
 import { readContract } from "viem/actions"
 import { create } from "zustand"
 
-
 type Config = {
   account: SmartAccount,
   client: PublicClient,

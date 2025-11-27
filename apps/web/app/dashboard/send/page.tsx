@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Send, Wallet, CheckCircle2, ArrowRight, Info, ChevronDown, Loader2 } from "lucide-react"
+import { formatUnits } from "viem"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,33 +15,41 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-
-// Mock tokens for selection
-const tokens = [
-  { id: "eth", symbol: "ETH", name: "Ethereum", balance: "2.5", price: 2450.50, icon: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
-  { id: "usdc", symbol: "USDC", name: "USD Coin", balance: "1500.00", price: 1.00, icon: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png" },
-  { id: "matic", symbol: "MATIC", name: "Polygon", balance: "850.00", price: 0.85, icon: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
-  { id: "arb", symbol: "ARB", name: "Arbitrum", balance: "320.00", price: 1.12, icon: "https://cryptologos.cc/logos/arbitrum-arb-logo.png" },
-]
+import { useTokenBalances, TokenBalance } from "@/hooks/use-token-balance"
+import { useSmartAccount } from "@/hooks/use-smart-account"
 
 export default function SendPage() {
   const router = useRouter()
+  const { config } = useSmartAccount()
+  const smartAccount = config?.account
+  const { balances, isLoading: isBalancesLoading } = useTokenBalances("0x4fff0f708c768a46050f9b96c46c265729d1a62f")
+  
   const [step, setStep] = useState<"input" | "confirm" | "success">("input")
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     recipient: "",
     amount: "",
-    token: "eth",
+    token: "",
   })
 
-  const selectedToken = tokens.find((t) => t.id === formData.token) || tokens[0]!
+  // Set default token when balances are loaded
+  useEffect(() => {
+    const defaultToken = balances[0]
+    if (defaultToken && !formData.token) {
+      setFormData(prev => ({ ...prev, token: defaultToken.address }))
+    }
+  }, [balances, formData.token])
+
+  const selectedToken = balances.find((t) => t.address === formData.token) || (balances.length > 0 ? balances[0] : undefined)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleMaxAmount = () => {
-    handleInputChange("amount", selectedToken.balance)
+    if (selectedToken) {
+      handleInputChange("amount", formatUnits(selectedToken.balance || 0n, selectedToken.decimals))
+    }
   }
 
   const handleReview = (e: React.FormEvent) => {
@@ -58,22 +67,34 @@ export default function SendPage() {
   }
 
   const resetForm = () => {
-    setFormData({ recipient: "", amount: "", token: "eth" })
+    setFormData({ recipient: "", amount: "", token: balances[0]?.address || "" })
     setStep("input")
   }
 
   // Calculate fiat value
-  const fiatValue = formData.amount && selectedToken ? (parseFloat(formData.amount) * selectedToken.price).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : "$0.00"
+  const fiatValue = formData.amount && selectedToken && selectedToken.balanceInUsd 
+    ? (parseFloat(formData.amount) * (selectedToken.balanceInUsd / parseFloat(formatUnits(selectedToken.balance || 0n, selectedToken.decimals) || "1"))).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) 
+    : "$0.00"
+
+  // Helper to get token price (approximate from balanceInUsd / balance)
+  const getTokenPrice = (token: TokenBalance) => {
+    const balance = parseFloat(formatUnits(token.balance || 0n, token.decimals))
+    if (balance === 0) return 0
+    return (token.balanceInUsd || 0) / balance
+  }
+
+  if (isBalancesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-md mx-auto py-8 px-4">
       {/* Header Navigation */}
       <div className="mb-6 flex items-center">
-        <Button variant="ghost" size="icon" asChild className="mr-2 rounded-full hover:bg-muted">
-          <Link href="/dashboard">
-            <ArrowLeft className="size-5" />
-          </Link>
-        </Button>
         <h1 className="text-xl font-bold">Send Assets</h1>
       </div>
 
@@ -110,40 +131,53 @@ export default function SendPage() {
                       >
                         MAX
                       </Button>
-                      <Select value={formData.token} onValueChange={(value) => handleInputChange("token", value)}>
-                        <SelectTrigger className="h-8 w-fit gap-2 border-none bg-background shadow-sm rounded-full px-3 focus:ring-0">
-                          <div className="flex items-center gap-2">
-                            {/* Fallback icon if image fails or for mock */}
-                            <div className="size-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                                {selectedToken.symbol[0]}
-                            </div>
-                            <span className="font-semibold text-sm">{selectedToken.symbol}</span>
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                          {tokens.map((token) => (
-                            <SelectItem key={token.id} value={token.id}>
-                              <div className="flex items-center justify-between w-[200px] gap-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                                      {token.symbol[0]}
-                                  </div>
-                                  <div className="flex flex-col items-start text-xs">
-                                    <span className="font-semibold">{token.symbol}</span>
-                                    <span className="text-muted-foreground">{token.name}</span>
-                                  </div>
+                      {selectedToken && (
+                        <Select value={formData.token} onValueChange={(value) => handleInputChange("token", value)}>
+                          <SelectTrigger className="h-8 w-fit gap-2 border-none bg-background shadow-sm rounded-full px-3 focus:ring-0">
+                            <div className="flex items-center gap-2">
+                              {selectedToken.logoURI ? (
+                                <img src={selectedToken.logoURI} alt={selectedToken.symbol} className="size-5 rounded-full" />
+                              ) : (
+                                <div className="size-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                                    {selectedToken.symbol[0]}
                                 </div>
-                                <span className="text-xs font-mono">{token.balance}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                              )}
+                              <span className="font-semibold text-sm">{selectedToken.symbol}</span>
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent align="end">
+                            {balances.map((token) => (
+                              <SelectItem key={token.address} value={token.address}>
+                                <div className="flex items-center justify-between w-[200px] gap-2">
+                                  <div className="flex items-center gap-2">
+                                    {token.logoURI ? (
+                                      <img src={token.logoURI} alt={token.symbol} className="size-6 rounded-full" />
+                                    ) : (
+                                      <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                                          {token.symbol[0]}
+                                      </div>
+                                    )}
+                                    <div className="flex flex-col items-start text-xs">
+                                      <span className="font-semibold">{token.symbol}</span>
+                                      <span className="text-muted-foreground">{token.name}</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs font-mono">
+                                    {parseFloat(formatUnits(token.balance || 0n, token.decimals)).toFixed(4)}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-end px-1">
-                   <span className="text-xs text-muted-foreground">Balance: {selectedToken.balance} {selectedToken.symbol}</span>
+                   <span className="text-xs text-muted-foreground">
+                     Balance: {selectedToken ? formatUnits(selectedToken.balance || 0n, selectedToken.decimals) : "0"} {selectedToken?.symbol}
+                   </span>
                 </div>
               </div>
 
@@ -168,7 +202,7 @@ export default function SendPage() {
                 type="submit" 
                 className="w-full h-12 text-base font-semibold rounded-xl shadow-md shadow-primary/20" 
                 size="lg"
-                disabled={!formData.amount || !formData.recipient}
+                disabled={!formData.amount || !formData.recipient || !selectedToken}
               >
                 Review Transaction
                 <ArrowRight className="ml-2 size-4" />
@@ -177,7 +211,7 @@ export default function SendPage() {
           </form>
         )}
 
-        {step === "confirm" && (
+        {step === "confirm" && selectedToken && (
           <>
             <CardHeader className="pb-2">
               <CardTitle className="text-center text-xl">Review Transaction</CardTitle>
@@ -187,7 +221,12 @@ export default function SendPage() {
               
               <div className="flex flex-col items-center py-4 space-y-2">
                  <div className="text-4xl font-bold tracking-tight">
-                    {formData.amount} <span className="text-2xl text-muted-foreground font-medium">{selectedToken.symbol}</span>
+                    {(() => {
+                      if (!formData.amount) return "0"
+                      const [integer, decimal] = formData.amount.split(".")
+                      if (!decimal) return integer
+                      return `${integer}.${decimal.slice(0, 6)}`
+                    })()} <span className="text-2xl text-muted-foreground font-medium">{selectedToken.symbol}</span>
                  </div>
                  <Badge variant="outline" className="px-3 py-1 text-sm font-normal bg-muted/50">
                     {fiatValue}
@@ -245,7 +284,7 @@ export default function SendPage() {
           </>
         )}
 
-        {step === "success" && (
+        {step === "success" && selectedToken && (
           <div className="text-center py-6">
             <CardContent className="space-y-6 pt-2">
               <div className="flex justify-center">
