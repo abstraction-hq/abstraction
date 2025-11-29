@@ -86,7 +86,6 @@ export const useSmartAccount = () => {
     setCredential(credential)
   }, [setCredential])
 
-
   const loginSmartAccount = useCallback(async () => {
     const res = await WebAuthnP256.sign({
       challenge: "0x1",
@@ -150,15 +149,20 @@ export const useSmartAccount = () => {
     return estimation
   }, [config])
 
-  const sendTransaction = useCallback(async (calls: Call[], maxFeePerGas?: bigint, maxPriorityFeePerGas?: bigint): Promise<Hex> => {
+  const sendTransaction = useCallback(async (calls: Call[], options?: {
+    maxFeePerGas?: bigint,
+    maxPriorityFeePerGas?: bigint,
+    preVerificationGas?: bigint,
+    verificationGasLimit?: bigint,
+    callGasLimit?: bigint
+  }): Promise<Hex> => {
     if (!config) {
       throw new Error("Smart account not initialized")
     }
 
     const hash = await config.bundlerClient.sendUserOperation({
       calls,
-      maxFeePerGas,
-      maxPriorityFeePerGas
+      ...options
     })
 
     return hash
@@ -176,6 +180,8 @@ export const useSmartAccount = () => {
     loginSmartAccount,
     loading: loading || configLoading,
     config,
-    logout
+    logout,
+    estimateTransaction,
+    sendTransaction
   }
 }

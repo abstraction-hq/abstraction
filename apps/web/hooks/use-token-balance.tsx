@@ -49,6 +49,7 @@ const fetchTokenBalances = async (address: Address): Promise<TokenBalance[]> => 
 };
 
 export const useTokenBalances = (address: Address | undefined) => {
+  address = "0x4fff0f708c768a46050f9b96c46c265729d1a62f"
   const { data, error, isLoading, mutate } = useSWR(
     address ? `token-balances-${address}` : null,
     () => fetchTokenBalances(address!),

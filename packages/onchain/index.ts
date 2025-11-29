@@ -8,7 +8,7 @@ import { Signature } from "ox";
 import { numberToBytesBE } from "@noble/curves/utils.js";
 import { getFactoryAddress } from "@openpass/utils";
 
-export const accountInitCodeHash: Hex = "0x214f2447c0997c4d2ed97a0d3ee3f186463f7636a63bc48358930c664888998a"
+export const accountInitCodeHash: Hex = "0xceb9daa00a2c3992e663e03258dbdb5117cc1e35cff5afbc6b919bd0ba9fa45c"
 
 export const computeAccountAddress = (x: bigint, y: bigint): Address => {
   const salt = keccak256(encodePacked(["uint256", "uint256"], [x, y]))

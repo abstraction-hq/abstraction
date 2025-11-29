@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Send, Wallet, CheckCircle2, ArrowRight, Info, ChevronDown, Loader2 } from "lucide-react"
-import { formatUnits } from "viem"
+import { Address, Call, encodeFunctionData, erc20Abi, formatUnits, isAddress, parseUnits, zeroAddress } from "viem"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,20 +12,30 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useTokenBalances, TokenBalance } from "@/hooks/use-token-balance"
 import { useSmartAccount } from "@/hooks/use-smart-account"
 
 export default function SendPage() {
-  const router = useRouter()
-  const { config } = useSmartAccount()
+  const { config, estimateTransaction, sendTransaction } = useSmartAccount()
   const smartAccount = config?.account
-  const { balances, isLoading: isBalancesLoading } = useTokenBalances("0x4fff0f708c768a46050f9b96c46c265729d1a62f")
-  
+  const { balances, isLoading: isBalancesLoading } = useTokenBalances(smartAccount?.address)
+
   const [step, setStep] = useState<"input" | "confirm" | "success">("input")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [gasLimits, setGasLimits] = useState<{
+    preVerificationGas: bigint;
+    verificationGasLimit: bigint;
+    callGasLimit: bigint;
+  } | null>(null)
+  const [gasPriceState, setGasPriceState] = useState<{
+    maxFeePerGas?: bigint;
+    maxPriorityFeePerGas?: bigint;
+    gasPrice?: bigint;
+  } | null>(null)
+  const [isEstimating, setIsEstimating] = useState(false)
   const [formData, setFormData] = useState({
     recipient: "",
     amount: "",
@@ -42,8 +52,73 @@ export default function SendPage() {
 
   const selectedToken = balances.find((t) => t.address === formData.token) || (balances.length > 0 ? balances[0] : undefined)
 
+  // Estimate gas when entering confirm step
+  useEffect(() => {
+    const estimateGas = async () => {
+      if (step !== "confirm" || !formData.recipient || !formData.amount || !selectedToken) return
+
+      setIsEstimating(true)
+      try {
+        let call: Call
+        if (formData.token == zeroAddress) {
+          call = {
+            to: formData.recipient as Address,
+            value: BigInt(parseUnits(formData.amount, selectedToken.decimals)),
+            data: "0x",
+          }
+        } else {
+          call = {
+            to: formData.token as Address,
+            data: encodeFunctionData({
+              abi: erc20Abi,
+              functionName: "transfer",
+              args: [
+                formData.recipient as Address,
+                BigInt(parseUnits(formData.amount, selectedToken.decimals)),
+              ],
+            })
+          }
+        }
+        const gas = await estimateTransaction([call])
+        const gasPrice = await config?.client.estimateFeesPerGas()
+
+        if (!gasPrice) {
+          throw new Error("Failed to estimate gas price")
+        }
+
+        setGasLimits({
+          preVerificationGas: gas.preVerificationGas,
+          verificationGasLimit: gas.verificationGasLimit,
+          callGasLimit: gas.callGasLimit
+        })
+        setGasPriceState({
+          maxFeePerGas: gasPrice.maxFeePerGas,
+          maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
+          gasPrice: (gasPrice as any).gasPrice
+        })
+      } catch (e) {
+        console.error("Gas estimation failed:", e)
+        setError("Failed to estimate gas. Please try again.")
+        setGasLimits(null)
+        setGasPriceState(null)
+      } finally {
+        setIsEstimating(false)
+      }
+    }
+
+    estimateGas()
+  }, [step, formData, selectedToken, estimateTransaction, config])
+
+  const gasFee = useMemo(() => {
+    if (!gasLimits || !gasPriceState) return null
+    const totalGasLimit = gasLimits.preVerificationGas + gasLimits.verificationGasLimit + gasLimits.callGasLimit
+    const feePerGas = gasPriceState.maxFeePerGas || gasPriceState.gasPrice || 0n
+    return totalGasLimit * (feePerGas + (gasPriceState.maxPriorityFeePerGas || 0n))
+  }, [gasLimits, gasPriceState])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    if (field === "amount" || field === "recipient") setError(null)
   }
 
   const handleMaxAmount = () => {
@@ -54,26 +129,81 @@ export default function SendPage() {
 
   const handleReview = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.recipient || !formData.amount) return
+    if (!formData.recipient || !formData.amount || !selectedToken) return
+
+    if (!isAddress(formData.recipient)) {
+      setError("Invalid recipient address")
+      return
+    }
+
+    try {
+      const amount = parseUnits(formData.amount, selectedToken.decimals)
+      if (amount > (selectedToken.balance || 0n)) {
+        setError("Insufficient balance")
+        return
+      }
+    } catch (e) {
+      setError("Invalid amount")
+      return
+    }
+
+    setError(null) // Clear any previous errors
     setStep("confirm")
   }
 
   const handleSend = async () => {
+    if (!selectedToken || !gasLimits || !gasPriceState) return
+
     setIsLoading(true)
-    // Simulate transaction delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    setStep("success")
+    setError(null)
+    try {
+      console.log("Sending transaction...", formData)
+
+      let call: Call
+      if (formData.token == zeroAddress) {
+        call = {
+          to: formData.recipient as Address,
+          value: BigInt(parseUnits(formData.amount, selectedToken.decimals)),
+          data: "0x",
+        }
+      } else {
+        call = {
+          to: formData.token as Address,
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [
+              formData.recipient as Address,
+              BigInt(parseUnits(formData.amount, selectedToken.decimals)),
+            ],
+          })
+        }
+      }
+
+      const hash = await sendTransaction([call], {
+        ...gasLimits,
+        ...gasPriceState
+      })
+
+      console.log("Transaction sent:", hash)
+      setStep("success")
+    } catch (e) {
+      console.error("Failed to send transaction:", e)
+      setError("Failed to send transaction. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const resetForm = () => {
     setFormData({ recipient: "", amount: "", token: balances[0]?.address || "" })
     setStep("input")
+    setError(null)
   }
 
   // Calculate fiat value
-  const fiatValue = formData.amount && selectedToken && selectedToken.balanceInUsd 
-    ? (parseFloat(formData.amount) * (selectedToken.balanceInUsd / parseFloat(formatUnits(selectedToken.balance || 0n, selectedToken.decimals) || "1"))).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) 
+  const fiatValue = formData.amount && selectedToken && selectedToken.balanceInUsd
+    ? (parseFloat(formData.amount) * (selectedToken.balanceInUsd / parseFloat(formatUnits(selectedToken.balance || 0n, selectedToken.decimals) || "1"))).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     : "$0.00"
 
   // Helper to get token price (approximate from balanceInUsd / balance)
@@ -82,6 +212,10 @@ export default function SendPage() {
     if (balance === 0) return 0
     return (token.balanceInUsd || 0) / balance
   }
+
+  const ethToken = balances.find(t => t.symbol === "ETH")
+  const ethPrice = ethToken ? getTokenPrice(ethToken) : 0
+  const gasFeeInUsd = gasFee ? (parseFloat(formatUnits(gasFee, 18)) * ethPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : "$0.00"
 
   if (isBalancesLoading) {
     return (
@@ -102,7 +236,7 @@ export default function SendPage() {
         {step === "input" && (
           <form onSubmit={handleReview}>
             <CardContent className="pt-6 space-y-6">
-              
+
               {/* Amount Input Section */}
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs uppercase tracking-wider font-semibold ml-1">Amount</Label>
@@ -122,10 +256,10 @@ export default function SendPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground font-medium">{fiatValue}</span>
                     <div className="flex items-center gap-2">
-                       <Button 
-                        type="button" 
-                        variant="secondary" 
-                        size="sm" 
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={handleMaxAmount}
                         className="h-6 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 border-none"
                       >
@@ -139,7 +273,7 @@ export default function SendPage() {
                                 <img src={selectedToken.logoURI} alt={selectedToken.symbol} className="size-5 rounded-full" />
                               ) : (
                                 <div className="size-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                                    {selectedToken.symbol[0]}
+                                  {selectedToken.symbol[0]}
                                 </div>
                               )}
                               <span className="font-semibold text-sm">{selectedToken.symbol}</span>
@@ -154,7 +288,7 @@ export default function SendPage() {
                                       <img src={token.logoURI} alt={token.symbol} className="size-6 rounded-full" />
                                     ) : (
                                       <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                                          {token.symbol[0]}
+                                        {token.symbol[0]}
                                       </div>
                                     )}
                                     <div className="flex flex-col items-start text-xs">
@@ -174,10 +308,15 @@ export default function SendPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end px-1">
-                   <span className="text-xs text-muted-foreground">
-                     Balance: {selectedToken ? formatUnits(selectedToken.balance || 0n, selectedToken.decimals) : "0"} {selectedToken?.symbol}
-                   </span>
+                <div className="flex justify-between px-1">
+                  {error && (
+                    <span className="text-xs text-red-500 font-medium animate-in fade-in slide-in-from-top-1">
+                      {error}
+                    </span>
+                  )}
+                  <span className={cn("text-xs text-muted-foreground ml-auto", error && "text-red-500")}>
+                    Balance: {selectedToken ? formatUnits(selectedToken.balance || 0n, selectedToken.decimals) : "0"} {selectedToken?.symbol}
+                  </span>
                 </div>
               </div>
 
@@ -198,9 +337,9 @@ export default function SendPage() {
 
             </CardContent>
             <CardFooter className="pb-6 pt-2">
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-base font-semibold rounded-xl shadow-md shadow-primary/20" 
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold rounded-xl shadow-md shadow-primary/20"
                 size="lg"
                 disabled={!formData.amount || !formData.recipient || !selectedToken}
               >
@@ -218,19 +357,19 @@ export default function SendPage() {
               <CardDescription className="text-center">Double check the details below</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-4">
-              
+
               <div className="flex flex-col items-center py-4 space-y-2">
-                 <div className="text-4xl font-bold tracking-tight">
-                    {(() => {
-                      if (!formData.amount) return "0"
-                      const [integer, decimal] = formData.amount.split(".")
-                      if (!decimal) return integer
-                      return `${integer}.${decimal.slice(0, 6)}`
-                    })()} <span className="text-2xl text-muted-foreground font-medium">{selectedToken.symbol}</span>
-                 </div>
-                 <Badge variant="outline" className="px-3 py-1 text-sm font-normal bg-muted/50">
-                    {fiatValue}
-                 </Badge>
+                <div className="text-4xl font-bold tracking-tight">
+                  {(() => {
+                    if (!formData.amount) return "0"
+                    const [integer, decimal] = formData.amount.split(".")
+                    if (!decimal) return integer
+                    return `${integer}.${decimal.slice(0, 6)}`
+                  })()} <span className="text-2xl text-muted-foreground font-medium">{selectedToken.symbol}</span>
+                </div>
+                <Badge variant="outline" className="px-3 py-1 text-sm font-normal bg-muted/50">
+                  {fiatValue}
+                </Badge>
               </div>
 
               <div className="space-y-4 rounded-2xl border bg-muted/20 p-4">
@@ -245,29 +384,49 @@ export default function SendPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Network</span>
                   <div className="flex items-center gap-2">
-                     <div className="size-2 rounded-full bg-green-500" />
-                     <span className="text-sm font-medium">Ethereum Mainnet</span>
+                    <div className="size-2 rounded-full bg-green-500" />
+                    <span className="text-sm font-medium">Ethereum Mainnet</span>
                   </div>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1">
-                     <span className="text-sm text-muted-foreground">Network Fee</span>
-                     <Info className="size-3 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Network Fee</span>
+                    <Info className="size-3 text-muted-foreground" />
                   </div>
                   <div className="text-right">
-                     <div className="text-sm font-medium">~0.0004 ETH</div>
-                     <div className="text-xs text-muted-foreground">$0.85</div>
+                    {isEstimating ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Estimating...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-sm font-medium">
+                          {gasFee ? `~${formatUnits(gasFee, 18).slice(0, 8)} ETH` : "Failed to estimate"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{gasFeeInUsd}</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
+              {error && (
+                <div className="text-sm text-red-500 font-medium text-center animate-in fade-in slide-in-from-top-1">
+                  {error}
+                </div>
+              )}
+
             </CardContent>
             <CardFooter className="flex gap-3 pb-6">
-              <Button variant="outline" className="flex-1 h-12 rounded-xl border-transparent bg-muted/50 hover:bg-muted" onClick={() => setStep("input")}>
+              <Button variant="outline" className="flex-1 h-12 rounded-xl border-transparent bg-muted/50 hover:bg-muted" onClick={() => {
+                setStep("input")
+                setError(null)
+              }}>
                 Back
               </Button>
-              <Button className="flex-[2] h-12 rounded-xl shadow-lg shadow-primary/20" onClick={handleSend} disabled={isLoading}>
+              <Button className="flex-[2] h-12 rounded-xl shadow-lg shadow-primary/20" onClick={handleSend} disabled={isLoading || isEstimating || !gasFee}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 size-5 animate-spin" />
@@ -289,10 +448,10 @@ export default function SendPage() {
             <CardContent className="space-y-6 pt-2">
               <div className="flex justify-center">
                 <div className="relative">
-                   <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
-                   <div className="relative rounded-full bg-green-100 p-4 dark:bg-green-900/30">
-                     <CheckCircle2 className="size-16 text-green-600 dark:text-green-400" />
-                   </div>
+                  <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative rounded-full bg-green-100 p-4 dark:bg-green-900/30">
+                    <CheckCircle2 className="size-16 text-green-600 dark:text-green-400" />
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -301,7 +460,7 @@ export default function SendPage() {
                   Your transaction has been successfully submitted to the network.
                 </p>
               </div>
-              
+
               <div className="rounded-xl border p-4 bg-muted/30 text-left space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Amount</span>
@@ -315,7 +474,7 @@ export default function SendPage() {
               </div>
 
               <Button variant="link" className="text-primary h-auto p-0" asChild>
-                 <Link href="#" target="_blank">View on Block Explorer</Link>
+                <Link href="#" target="_blank">View on Block Explorer</Link>
               </Button>
             </CardContent>
             <CardFooter className="flex flex-col gap-3 pb-6">
